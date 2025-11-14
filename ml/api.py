@@ -34,7 +34,7 @@ async def predict(image: UploadFile = File(...), vehicle_type: str | None = None
     img = read_image_file(image)
     det = detect_from_numpy(img)
     price_map = load_price_map()
-    cost_summary = aggregate_costs_for_classes(det["classes"], price_map, vehicle_type)
+    cost_summary = aggregate_costs_for_classes(det["classes"], price_map, vehicle_type, det.get("areas"))
 
     per_class_costs = cost_summary["per_class_costs"]
     dets = []

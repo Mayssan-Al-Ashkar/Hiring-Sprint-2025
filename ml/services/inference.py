@@ -76,7 +76,12 @@ def parse_price_range_to_min_max(price_str: str) -> Tuple[int, Optional[int], bo
     return nums[0], nums[1], has_plus
 
 
-def aggregate_costs_for_classes(detected_classes: List[str], price_map: Dict[str, str], vehicle_type: Optional[str] = None) -> Dict:
+def aggregate_costs_for_classes(
+    detected_classes: List[str],
+    price_map: Dict[str, str],
+    vehicle_type: Optional[str] = None,
+    areas: Optional[List[float]] = None,  # area ratios aligned with detected_classes
+) -> Dict:
     # Normalize detected class names
     normalized_classes = [normalize_class_key(c) for c in detected_classes]
 
@@ -113,6 +118,20 @@ def aggregate_costs_for_classes(detected_classes: List[str], price_map: Dict[str
         labor_rate = float(os.environ.get("LABOR_RATE_USD", "95"))
         paint_rate = float(os.environ.get("PAINT_RATE_USD", "120"))
         materials_usd = float(os.environ.get("MATERIALS_USD", "50"))
+        cost_multiplier = float(os.environ.get("COST_MULTIPLIER", "0.6"))
+
+        # Optional area-based scaling parameters
+        area_ref = float(os.environ.get("AREA_REF", "0.15"))            # reference area ratio ~ 15% of image
+        area_min_scale = float(os.environ.get("AREA_MIN_SCALE", "0.25"))  # minimum scaling for tiny dents
+        area_max_scale = float(os.environ.get("AREA_MAX_SCALE", "1.0"))   # cap scaling at 1.0
+        area_gamma = float(os.environ.get("AREA_GAMMA", "0.7"))         # non-linear exponent
+
+        # Group areas by class if provided
+        class_to_areas: Dict[str, List[float]] = {}
+        if areas is not None and len(areas) == len(detected_classes):
+            for c, a in zip(detected_classes, areas):
+                key = normalize_class_key(c)
+                class_to_areas.setdefault(key, []).append(max(0.0, min(1.0, float(a))))
 
         per_class_costs: Dict[str, dict] = {}
         total = 0.0
@@ -120,27 +139,46 @@ def aggregate_costs_for_classes(detected_classes: List[str], price_map: Dict[str
             rule = rules_norm.get(cls)
             if not rule:
                 continue
+            # base cost per item from rules
             if "per_item_usd" in rule:
-                each = float(rule["per_item_usd"])
+                base_each = float(rule["per_item_usd"]) * cost_multiplier
             else:
                 parts = float(rule.get("parts_usd", 0))
                 labor_h = float(rule.get("labor_h", 0))
                 paint_h = float(rule.get("paint_h", 0))
-                each = parts + labor_h * labor_rate + paint_h * paint_rate + materials_usd
+                base_each = (parts + labor_h * labor_rate + paint_h * paint_rate + materials_usd) * cost_multiplier
+
+            # Apply area scaling per detection if we have areas; otherwise use base cost
+            class_areas = class_to_areas.get(cls, [None] * count)
+            per_item_costs: List[float] = []
+            for a in class_areas:
+                if a is None:
+                    per_item_costs.append(base_each)
+                else:
+                    scale = (a / area_ref) ** area_gamma if area_ref > 0 else 1.0
+                    scale = max(area_min_scale, min(area_max_scale, scale))
+                    per_item_costs.append(base_each * scale)
+
+            # If we didn't have areas, ensure list length matches count
+            if not per_item_costs or len(per_item_costs) < count:
+                per_item_costs = per_item_costs + [base_each] * (count - len(per_item_costs))
+
+            avg_each = float(sum(per_item_costs) / len(per_item_costs)) if per_item_costs else base_each
             per_class_costs[cls] = {
                 "count": count,
-                "range_text": f"${each:,.0f} USD each",
-                "min_each": each,
-                "max_each": each,
+                "range_text": f"${avg_each:,.0f} USD each",
+                "min_each": avg_each,
+                "max_each": avg_each,
                 "open_ended": False,
             }
-            total += each * count
+            total += sum(per_item_costs)
         totals = {"min": int(round(total)), "max": int(round(total)), "open_ended": False, "currency": "USD"}
         return {"counts": per_class_counts, "per_class_costs": per_class_costs, "totals": totals}
 
     # Fallback: price ranges (MMK) → USD midpoint using FX
     normalized_price_map = {normalize_class_key(k): v for k, v in price_map.items()}
     fx_mmk_per_usd = float(os.environ.get("FX_MMK_PER_USD", "2100"))
+    cost_multiplier = float(os.environ.get("COST_MULTIPLIER", "0.6"))
 
     per_class_costs: Dict[str, dict] = {}
     total_usd = 0.0
@@ -152,7 +190,7 @@ def aggregate_costs_for_classes(detected_classes: List[str], price_map: Dict[str
         if max_mmk is None:
             max_mmk = min_mmk
         midpoint_mmk = (min_mmk + max_mmk) / 2
-        each_usd = midpoint_mmk / fx_mmk_per_usd if fx_mmk_per_usd > 0 else midpoint_mmk
+        each_usd = (midpoint_mmk / fx_mmk_per_usd if fx_mmk_per_usd > 0 else midpoint_mmk) * cost_multiplier
         per_class_costs[cls] = {
             "count": count,
             "range_text": f"${each_usd:,.0f} USD each",
@@ -170,14 +208,24 @@ def detect_from_numpy(image_array: np.ndarray) -> Dict:
     model = load_model()
     results = model(image_array)
     if not results:
-        return {"classes": [], "confidences": [], "annotated_image": image_array}
+        return {"classes": [], "confidences": [], "annotated_image": image_array, "areas": []}
     res = results[0]
     classes = []
     confidences = []
+    areas: List[float] = []
     if res.boxes is not None and hasattr(res.boxes, "cls"):
         classes = [res.names[int(cls)] for cls in res.boxes.cls.tolist()]
         if hasattr(res.boxes, "conf") and res.boxes.conf is not None:
             confidences = [float(c) for c in res.boxes.conf.tolist()]
+        # compute area ratios
+        try:
+            h, w = image_array.shape[:2]
+            for xyxy in res.boxes.xyxy.cpu().numpy():
+                x1, y1, x2, y2 = map(int, xyxy[:4])
+                a = max(0, x2 - x1) * max(0, y2 - y1)
+                areas.append(float(a) / float(max(1, w * h)))
+        except Exception:
+            areas = [0.0 for _ in classes]
 
     # Draw boxes only (no labels/confidence)
     annotated_bgr = image_array[:, :, ::-1].copy()  # convert RGB->BGR for OpenCV
@@ -189,7 +237,7 @@ def detect_from_numpy(image_array: np.ndarray) -> Dict:
         except Exception:
             pass
     annotated_rgb = annotated_bgr[:, :, ::-1]  # back to RGB
-    return {"classes": classes, "confidences": confidences, "annotated_image": annotated_rgb}
+    return {"classes": classes, "confidences": confidences, "annotated_image": annotated_rgb, "areas": areas}
 
 
 def compare_before_after(before_img: np.ndarray, after_img: np.ndarray, price_map: Dict[str, str]) -> Dict:

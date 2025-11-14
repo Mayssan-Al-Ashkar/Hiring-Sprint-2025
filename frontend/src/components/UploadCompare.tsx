@@ -129,12 +129,22 @@ export default function UploadCompare() {
           <div>
             <label>Pick-up (Before): </label>
             <input type="file" accept="image/*" onChange={(e) => onBeforeChange(e.target.files?.[0] || null)} />
-            <button type="button" style={{ marginLeft: 6 }} onClick={() => setShowCameraFor('before')}>Use Camera</button>
+            <button type="button" className="btn-camera" style={{ marginLeft: 6 }} onClick={() => setShowCameraFor('before')}>
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M9 7l1.2-2.4c.2-.4.6-.6 1-.6h2.6c.4 0 .8.2 1 .6L16 7h2c1.1 0 2 .9 2 2v8c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2V9c0-1.1.9-2 2-2h3zm3 2.5a4.5 4.5 0 100 9 4.5 4.5 0 000-9zm0 2a2.5 2.5 0 110 5 2.5 2.5 0 010-5z"/>
+              </svg>
+              Use Camera
+            </button>
           </div>
           <div>
             <label>Return (After): </label>
             <input type="file" accept="image/*" onChange={(e) => onAfterChange(e.target.files?.[0] || null)} />
-            <button type="button" style={{ marginLeft: 6 }} onClick={() => setShowCameraFor('after')}>Use Camera</button>
+            <button type="button" className="btn-camera" style={{ marginLeft: 6 }} onClick={() => setShowCameraFor('after')}>
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M9 7l1.2-2.4c.2-.4.6-.6 1-.6h2.6c.4 0 .8.2 1 .6L16 7h2c1.1 0 2 .9 2 2v8c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2V9c0-1.1.9-2 2-2h3zm3 2.5a4.5 4.5 0 100 9 4.5 4.5 0 000-9zm0 2a2.5 2.5 0 110 5 2.5 2.5 0 010-5z"/>
+              </svg>
+              Use Camera
+            </button>
           </div>
           <button className="primary" type="submit" disabled={(!beforeFile && !beforeUrl) || (!afterFile && !afterUrl) || loading}>{loading ? 'Comparing…' : 'Compare'}</button>
         </div>

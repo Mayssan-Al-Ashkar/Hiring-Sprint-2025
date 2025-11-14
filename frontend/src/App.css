@@ -1,120 +1,211 @@
+/* ============================================
+   THEME VARIABLES
+============================================ */
 :root {
   --bg: #121212;
   --panel: #1e1e1e;
   --text: #f3f3f3;
   --muted: #9aa0a6;
-  --brand: #cba135;
+  --brand: #3594cb;
   --brand-contrast: #0b1015;
   --border: #2a2a2a;
 }
 
-html, body, #root { height: 100%; }
+/* ============================================
+   BASE RESET + LAYOUT FIX
+============================================ */
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+}
 
 body {
-  margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-}
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell;
 
-.container {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 28px 20px;
-  text-align: center;
-  min-height: 100vh;
   display: flex;
-  align-items: center;
   justify-content: center;
-  flex-direction: column;
+  align-items: flex-start;  
 }
 
+/* Overrides Vite default CSS */
+body, :root {
+  background: var(--bg) !important;
+  display: block !important;
+}
+
+/* ============================================
+   CONTAINER
+============================================ */
+.container {
+  width: min(95%, 1100px);
+  margin: 0 auto;
+  padding: 24px 0;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* ============================================
+   TYPOGRAPHY
+============================================ */
 .title {
-  font-size: 44px;
+  font-size: clamp(26px, 4vw, 44px);
   margin: 10px 0 6px;
 }
 
 .subtitle {
   color: var(--muted);
   margin-bottom: 22px;
+  font-size: clamp(14px, 2.6vw, 18px);
+  max-width: 700px;
 }
 
+/* ============================================
+   TABS
+============================================ */
 .tabs {
-  display: inline-flex;
+  display: flex;
   gap: 8px;
   background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 6px;
+  border-radius: 12px;
+  padding: 6px 8px;
+
+  flex-wrap: wrap;
+  justify-content: center;
 }
+
 .tab-btn {
-  appearance: none;
-  border: 0;
-  padding: 10px 14px;
-  border-radius: 8px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: none;
   background: transparent;
   color: var(--text);
   cursor: pointer;
+  font-size: 14px;
 }
+
 .tab-btn.active {
   background: var(--brand);
   color: var(--brand-contrast);
   font-weight: 600;
 }
-.actions {
-  margin: 12px 0 6px;
+
+/* ============================================
+   PANEL
+============================================ */
+.panel {
+  width: min(95%, 900px);
+
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px 20px;
+  margin-top: 20px;
+
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 8px;
+}
+
+/* ============================================
+   GRID (images)
+============================================ */
+.grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.preview {
+  width: 100%;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+/* ============================================
+   ACTIONS (dropdown, buttons)
+============================================ */
+.actions {
+  margin: 15px 0;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
   justify-content: center;
 }
+
 .primary {
   background: var(--brand);
   color: var(--brand-contrast);
-  border: none;
-  border-radius: 8px;
-  padding: 10px 16px;
+  padding: 10px 18px;
+  border-radius: 10px;
   font-weight: 600;
+  border: none;
   cursor: pointer;
 }
+
+.primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .select {
   background: var(--panel);
   color: var(--text);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 10px 12px;
 }
-.primary:disabled {
-  opacity: .6;
-  cursor: not-allowed;
-}
-.panel {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 18px;
-  margin: 16px auto;
-  text-align: left;
-  max-width: 900px;
-  width: fit-content;         /* shrink to content to avoid wide gray area */
-  display: inline-block;      /* shrink to content width */
-  align-self: center;         /* center inside container flex */
-  box-shadow: 0 10px 24px rgba(0,0,0,0.35);
-}
-.grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  justify-items: center;      /* center items within columns */
-}
-.preview {
-  width: 100%;
+
+/* Professional "Use Camera" button */
+.btn-camera {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
   border-radius: 10px;
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-}
-.metric {
-  font-weight: 700;
+  border: 1px solid var(--brand);
   color: var(--brand);
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.05s ease;
+}
+.btn-camera:hover {
+  background: color-mix(in srgb, var(--brand) 12%, transparent);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+}
+.btn-camera:active {
+  transform: translateY(1px);
+}
+.btn-camera svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+/* ============================================
+   MOBILE OPTIMIZATION
+============================================ */
+@media (max-width: 600px) {
+  .panel {
+    padding: 18px 14px;
+  }
+
+  .tab-btn {
+    padding: 9px 12px;
+    font-size: 13px;
+  }
+
+  .actions {
+    gap: 6px;
+  }
 }
