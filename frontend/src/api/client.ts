@@ -14,12 +14,18 @@ export const http = axios.create({
   baseURL,
 });
 
+export type Totals = { min: number; max: number | null; open_ended: boolean; currency: string };
+export type PerClassCost = { count: number; range_text: string; min_each: number; max_each: number | null; open_ended: boolean };
+export type PriceBlock = { provider?: string; ml_usd?: number | null; rule_usd?: number; final_usd?: number };
+
 export type PredictResponse = {
   classes: string[];
   detections?: { class: string; confidence: number | null; each_cost_usd: number | null }[];
   counts: Record<string, number>;
-  per_class_costs: Record<string, { count: number; range_text: string; min_each: number; max_each: number | null; open_ended: boolean }>;
-  totals: { min: number; max: number | null; open_ended: boolean; currency: string };
+  per_class_costs: Record<string, PerClassCost>;
+  totals?: Totals;          // legacy
+  totals_rule?: Totals;     // new API field
+  price?: PriceBlock;       // present when ML is enabled
   annotated_image_b64?: string;
 };
 
@@ -35,7 +41,9 @@ export type CompareResponse = {
   before_counts: Record<string, number>;
   after_counts: Record<string, number>;
   new_damage_counts: Record<string, number>;
-  new_damage_costs: PredictResponse;
+  new_damage_costs?: { totals: Totals };       // legacy
+  new_damage_costs_rule?: { totals: Totals };  // new API field
+  price?: { provider?: string; ml_delta_usd?: number | null; rule_delta_usd?: number; final_delta_usd?: number };
   before_annotated_b64?: string;
   after_annotated_b64?: string;
 };

@@ -1,13 +1,21 @@
 import { useEffect, useState } from 'react';
 import { compare } from '../api/client';
-import type { CompareResponse } from '../api/client';
+import type { CompareResponse, Totals } from '../api/client';
 import { fileToDataUrl, dataUrlToFile, saveLS, loadLS } from '../utils/storage';
 import CameraCapture from './CameraCapture';
 
-function formatTotal(t: CompareResponse['new_damage_costs']['totals']) {
-  if (t.open_ended || t.max == null) return `≥ ${t.min.toLocaleString()} ${t.currency}`;
-  if (t.min === t.max) return `${t.min.toLocaleString()} ${t.currency}`;
-  return `${t.min.toLocaleString()} – ${t.max.toLocaleString()} ${t.currency}`;
+type MoneyLike = number | (Partial<Totals> & { min?: number; max?: number | null }) | null | undefined;
+
+function formatTotal(t: MoneyLike): string {
+  if (t === null || t === undefined) return '-';
+  if (typeof t === 'number') return `$${t.toLocaleString()} USD`;
+  const min = Math.round((t?.min ?? 0) as number);
+  const max = (t?.max ?? null) as number | null;
+  const currency = (t?.currency as string) || 'USD';
+  const open = Boolean(t?.open_ended);
+  if (open || max == null) return `≥ ${min.toLocaleString()} ${currency}`;
+  if (min === max) return `${min.toLocaleString()} ${currency}`;
+  return `${min.toLocaleString()} – ${max.toLocaleString()} ${currency}`;
 }
 
 export default function UploadCompare() {
@@ -53,7 +61,9 @@ export default function UploadCompare() {
     const rows = Object.entries(result.new_damage_counts).map(([cls, n]) => {
       return `<tr><td>${cls}</td><td style="text-align:center">${n}</td></tr>`;
     }).join('');
-    const total = formatTotal(result.new_damage_costs.totals);
+    const totalsObj = result.new_damage_costs?.totals ?? result.new_damage_costs_rule?.totals;
+    const finalNumber = result.price?.final_delta_usd ?? totalsObj?.min;
+    const total = formatTotal(finalNumber ?? totalsObj);
     const html = `
       <html><head><title>Damage Comparison Report</title>
       <style>
@@ -177,7 +187,15 @@ export default function UploadCompare() {
                   <li key={cls}>{cls} × {n}</li>
                 ))}
               </ul>
-              <strong>Estimated New Damage Total: {formatTotal(result.new_damage_costs.totals)}</strong>
+              <strong>
+                Estimated New Damage Total:{' '}
+                {formatTotal(
+                  (result.price?.final_delta_usd ??
+                    result.new_damage_costs?.totals?.min ??
+                    result.new_damage_costs_rule?.totals?.min ??
+                    undefined)
+                )}
+              </strong>
               <div className="actions" style={{ marginTop: 12 }}>
                 <button className="primary" onClick={onDownloadReport}>Download PDF Report</button>
               </div>

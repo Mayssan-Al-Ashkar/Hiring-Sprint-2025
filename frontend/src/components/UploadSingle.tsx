@@ -1,13 +1,21 @@
 import { useEffect, useState } from 'react';
 import { predict } from '../api/client';
-import type { PredictResponse } from '../api/client';
+import type { PredictResponse, Totals } from '../api/client';
 import { fileToDataUrl, dataUrlToFile, saveLS, loadLS } from '../utils/storage';
 import CameraCapture from './CameraCapture';
 
-function formatTotal(t: PredictResponse['totals']) {
-  if (t.open_ended || t.max == null) return `≥ ${t.min.toLocaleString()} ${t.currency}`;
-  if (t.min === t.max) return `${t.min.toLocaleString()} ${t.currency}`;
-  return `${t.min.toLocaleString()} – ${t.max.toLocaleString()} ${t.currency}`;
+type MoneyLike = number | (Partial<Totals> & { min?: number; max?: number | null }) | null | undefined;
+
+function formatTotal(t: MoneyLike): string {
+  if (t === null || t === undefined) return '-';
+  if (typeof t === 'number') return `$${t.toLocaleString()} USD`;
+  const min = Math.round((t?.min ?? 0) as number);
+  const max = (t?.max ?? null) as number | null;
+  const currency = (t?.currency as string) || 'USD';
+  const open = Boolean(t?.open_ended);
+  if (open || max == null) return `≥ ${min.toLocaleString()} ${currency}`;
+  if (min === max) return `${min.toLocaleString()} ${currency}`;
+  return `${min.toLocaleString()} – ${max.toLocaleString()} ${currency}`;
 }
 
 export default function UploadSingle() {
@@ -138,8 +146,16 @@ export default function UploadSingle() {
               </li>
             ))}
           </ul>
-          {/* Hide per-detection text list as requested */}
-          <strong>Estimated Total: {formatTotal(result.totals)}</strong>
+          {/* Choose final price: ML/hybrid if available, else rule totals */}
+          <strong>
+            Estimated Total:{' '}
+            {formatTotal(
+              (result.price?.final_usd ??
+                result.totals?.min ??
+                result.totals_rule?.min ??
+                undefined)
+            )}
+          </strong>
           <div className="actions" style={{ marginTop: 12 }}>
             <button className="primary" onClick={onDownloadReport}>Download PDF Report</button>
           </div>

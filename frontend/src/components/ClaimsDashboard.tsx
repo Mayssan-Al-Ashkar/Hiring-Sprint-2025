@@ -25,7 +25,9 @@ export default function ClaimsDashboard() {
       setLoading(true);
       setError(null);
       try {
-        const base = (import.meta as any).env?.VITE_API_BASE || 'http://localhost:8000';
+        // Avoid `any` on import.meta by using a safe structural cast
+        const env = (import.meta as unknown as { env?: { VITE_API_BASE?: string } }).env;
+        const base = (env?.VITE_API_BASE && String(env.VITE_API_BASE)) || 'http://localhost:8000';
         const url = base.replace(/\/$/, '') + '/api/claims';
         const res = await fetch(url);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
