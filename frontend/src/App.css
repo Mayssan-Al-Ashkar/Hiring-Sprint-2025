@@ -20,7 +20,7 @@ body {
 .container {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 28px 20px 60px;
+  padding: 28px 20px;
   text-align: center;
   min-height: 100vh;
   display: flex;
@@ -84,13 +84,17 @@ body {
   padding: 18px;
   margin: 16px auto;
   text-align: left;
-  max-width: 760px;
+  max-width: 900px;
+  width: fit-content;         /* shrink to content to avoid wide gray area */
+  display: inline-block;      /* shrink to content width */
+  align-self: center;         /* center inside container flex */
   box-shadow: 0 10px 24px rgba(0,0,0,0.35);
 }
 .grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
+  justify-items: center;      /* center items within columns */
 }
 .preview {
   width: 100%;

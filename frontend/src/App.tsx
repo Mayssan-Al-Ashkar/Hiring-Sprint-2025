@@ -5,16 +5,16 @@ import ClaimsDashboard from './components/ClaimsDashboard';
 import { useState } from 'react';
 
 export default function App() {
-  const [tab, setTab] = useState<'single' | 'compare'>('single');
+  const [tab, setTab] = useState<'single' | 'compare' | 'dashboard'>('single');
 
   return (
     <div className="container">
-      <h1 className="title">🚗 Vehicle Condition Assessment</h1>
+      <h1 className="title">Vehicle Condition Assessment</h1>
       <p className="subtitle">Upload vehicle photos to detect damages and get exact USD repair estimates. Compare pick‑up vs return to see new damage.</p>
       <div className="tabs">
         <button className={`tab-btn ${tab==='single' ? 'active' : ''}`} onClick={() => setTab('single')}>Single Image</button>
         <button className={`tab-btn ${tab==='compare' ? 'active' : ''}`} onClick={() => setTab('compare')}>Before / After Compare</button>
-        <button className={`tab-btn ${tab==='dashboard' ? 'active' : ''}`} onClick={() => setTab('dashboard' as any)}>Dashboard</button>
+        <button className={`tab-btn ${tab==='dashboard' ? 'active' : ''}`} onClick={() => setTab('dashboard')}>Dashboard</button>
       </div>
       <div className="panel">
         {tab === 'single' ? <UploadSingle /> : tab === 'compare' ? <UploadCompare /> : <ClaimsDashboard />}
