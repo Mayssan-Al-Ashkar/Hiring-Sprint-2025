@@ -23,9 +23,10 @@ export type PredictResponse = {
   annotated_image_b64?: string;
 };
 
-export async function predict(image: File) {
+export async function predict(image: File, vehicleType?: string) {
   const form = new FormData();
   form.append('image', image);
+  if (vehicleType) form.append('vehicle_type', vehicleType);
   const { data } = await http.post<PredictResponse>('/predict', form, { headers: { 'Content-Type': 'multipart/form-data' } });
   return data;
 }
@@ -39,10 +40,11 @@ export type CompareResponse = {
   after_annotated_b64?: string;
 };
 
-export async function compare(before: File, after: File) {
+export async function compare(before: File, after: File, vehicleType?: string) {
   const form = new FormData();
   form.append('before', before);
   form.append('after', after);
+  if (vehicleType) form.append('vehicle_type', vehicleType);
   const { data } = await http.post<CompareResponse>('/compare', form, { headers: { 'Content-Type': 'multipart/form-data' } });
   return data;
 }

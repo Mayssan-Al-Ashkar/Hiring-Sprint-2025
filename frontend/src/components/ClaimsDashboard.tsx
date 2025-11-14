@@ -5,6 +5,7 @@ type Claim = {
   type: 'single' | 'compare' | string;
   total_usd: number;
   currency: string;
+  vehicle_type?: string | null;
   image_path?: string | null;
   annotated_path?: string | null;
   before_path?: string | null;
@@ -50,6 +51,7 @@ export default function ClaimsDashboard() {
             <tr>
               <th style={{ textAlign: 'left', padding: 8, borderBottom: '1px solid #2a2a2a' }}>ID</th>
               <th style={{ textAlign: 'left', padding: 8, borderBottom: '1px solid #2a2a2a' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: 8, borderBottom: '1px solid #2a2a2a' }}>Vehicle</th>
               <th style={{ textAlign: 'right', padding: 8, borderBottom: '1px solid #2a2a2a' }}>Total</th>
               <th style={{ textAlign: 'left', padding: 8, borderBottom: '1px solid #2a2a2a' }}>Created</th>
             </tr>
@@ -59,6 +61,7 @@ export default function ClaimsDashboard() {
               <tr key={c.id}>
                 <td style={{ padding: 8, borderBottom: '1px solid #2a2a2a' }}>{c.id}</td>
                 <td style={{ padding: 8, borderBottom: '1px solid #2a2a2a' }}>{c.type}</td>
+                <td style={{ padding: 8, borderBottom: '1px solid #2a2a2a' }}>{c.vehicle_type || '-'}</td>
                 <td style={{ padding: 8, borderBottom: '1px solid #2a2a2a', textAlign: 'right' }}>
                   {c.total_usd.toLocaleString()} {c.currency}
                 </td>

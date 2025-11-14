@@ -8,6 +8,7 @@ class Claim extends Model
 {
     protected $fillable = [
         'type',
+        'vehicle_type',
         'counts',
         'new_damage_counts',
         'total_usd',

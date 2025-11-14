@@ -76,7 +76,7 @@ def parse_price_range_to_min_max(price_str: str) -> Tuple[int, Optional[int], bo
     return nums[0], nums[1], has_plus
 
 
-def aggregate_costs_for_classes(detected_classes: List[str], price_map: Dict[str, str]) -> Dict:
+def aggregate_costs_for_classes(detected_classes: List[str], price_map: Dict[str, str], vehicle_type: Optional[str] = None) -> Dict:
     # Normalize detected class names
     normalized_classes = [normalize_class_key(c) for c in detected_classes]
 
@@ -88,7 +88,28 @@ def aggregate_costs_for_classes(detected_classes: List[str], price_map: Dict[str
     # Try exact rule-based estimator (USD)
     rules = load_cost_rules()
     if rules:
-        rules_norm = {normalize_class_key(k): v for k, v in rules.items()}
+        selected_rules = rules
+        if isinstance(rules, dict):
+            # If a vehicle type was provided and exists, pick its sub-rules
+            if vehicle_type:
+                vt = normalize_class_key(vehicle_type)
+                if vt in rules and isinstance(rules[vt], dict):
+                    selected_rules = rules[vt]
+            # If still the top-level looks like a vehicle map (no severity keys), choose a sensible default
+            if selected_rules is rules:
+                severity_like_keys = {"minor", "moderate", "severe"}
+                top_keys = {normalize_class_key(k) for k in rules.keys()}
+                # If top level doesn't contain severity keys, assume nested by vehicle type
+                if severity_like_keys.isdisjoint(top_keys):
+                    if "car" in top_keys:
+                        selected_rules = rules["car"]
+                    else:
+                        # pick the first sub-dict
+                        for v in rules.values():
+                            if isinstance(v, dict):
+                                selected_rules = v
+                                break
+        rules_norm = {normalize_class_key(k): v for k, v in selected_rules.items()}
         labor_rate = float(os.environ.get("LABOR_RATE_USD", "95"))
         paint_rate = float(os.environ.get("PAINT_RATE_USD", "120"))
         materials_usd = float(os.environ.get("MATERIALS_USD", "50"))

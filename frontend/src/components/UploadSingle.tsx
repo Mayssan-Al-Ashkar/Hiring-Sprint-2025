@@ -17,6 +17,7 @@ export default function UploadSingle() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showCamera, setShowCamera] = useState(false);
+  const [vehicleType, setVehicleType] = useState<string>(() => loadLS<string>('vehicle.type') || 'car');
 
   // Load persisted state
   useEffect(() => {
@@ -50,7 +51,8 @@ export default function UploadSingle() {
     setLoading(true);
     setError(null);
     try {
-      const data = await predict(effectiveFile);
+      saveLS('vehicle.type', vehicleType);
+      const data = await predict(effectiveFile, vehicleType);
       setResult(data);
       saveLS('single.result', data);
     } catch (err: unknown) {
@@ -99,9 +101,16 @@ export default function UploadSingle() {
   return (
     <div>
       <form onSubmit={onSubmit} className="actions">
+        <select className="select" value={vehicleType} onChange={(e) => setVehicleType(e.target.value)}>
+          <option value="car">Car</option>
+          <option value="truck">Truck</option>
+          <option value="motorcycle">Motorcycle</option>
+          <option value="scooter">Scooter</option>
+          <option value="boat">Boat</option>
+        </select>
         <input type="file" accept="image/*" onChange={(e) => onFileChange(e.target.files?.[0] || null)} />
+        <button type="button" onClick={() => setShowCamera(true)}>Use Camera</button>
         <button className="primary" type="submit" disabled={(!file && !imageDataUrl) || loading}>{loading ? 'Analyzing…' : 'Analyze'}</button>
-        <button type="button" style={{ marginLeft: 8 }} onClick={() => setShowCamera(true)}>Use Camera</button>
       </form>
 
       {error && <p style={{ color: 'salmon' }}>{error}</p>}

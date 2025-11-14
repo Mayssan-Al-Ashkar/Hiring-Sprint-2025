@@ -22,7 +22,9 @@ class DamageController extends Controller
                 'image',
                 fopen($image, 'r'),
                 $request->file('image')->getClientOriginalName()
-            )->post($mlBase . '/predict');
+            )->post($mlBase . '/predict', [
+                'vehicle_type' => $request->input('vehicle_type')
+            ]);
         } catch (\Throwable $e) {
             return response()->json([
                 'error' => 'ML service unavailable',
@@ -48,6 +50,7 @@ class DamageController extends Controller
 
         $claim = Claim::create([
             'type' => 'single',
+            'vehicle_type' => $request->input('vehicle_type'),
             'counts' => $data['counts'] ?? null,
             'total_usd' => (int)($data['totals']['min'] ?? 0),
             'currency' => $data['totals']['currency'] ?? 'USD',
@@ -79,7 +82,9 @@ class DamageController extends Controller
                 'after',
                 fopen($after, 'r'),
                 $request->file('after')->getClientOriginalName()
-            )->post($mlBase . '/compare');
+            )->post($mlBase . '/compare', [
+                'vehicle_type' => $request->input('vehicle_type')
+            ]);
         } catch (\Throwable $e) {
             return response()->json([
                 'error' => 'ML service unavailable',
@@ -115,6 +120,7 @@ class DamageController extends Controller
 
         $claim = Claim::create([
             'type' => 'compare',
+            'vehicle_type' => $request->input('vehicle_type'),
             'counts' => $data['after_counts'] ?? null,
             'new_damage_counts' => $data['new_damage_counts'] ?? null,
             'total_usd' => $total,

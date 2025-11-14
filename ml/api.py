@@ -30,11 +30,11 @@ def image_to_b64(img_rgb: np.ndarray) -> str:
 
 
 @app.post("/predict")
-async def predict(image: UploadFile = File(...)):
+async def predict(image: UploadFile = File(...), vehicle_type: str | None = None):
     img = read_image_file(image)
     det = detect_from_numpy(img)
     price_map = load_price_map()
-    cost_summary = aggregate_costs_for_classes(det["classes"], price_map)
+    cost_summary = aggregate_costs_for_classes(det["classes"], price_map, vehicle_type)
 
     per_class_costs = cost_summary["per_class_costs"]
     dets = []
@@ -59,11 +59,18 @@ async def predict(image: UploadFile = File(...)):
 
 
 @app.post("/compare")
-async def compare(before: UploadFile = File(...), after: UploadFile = File(...)):
+async def compare(before: UploadFile = File(...), after: UploadFile = File(...), vehicle_type: str | None = None):
     before_img = read_image_file(before)
     after_img = read_image_file(after)
     price_map = load_price_map()
+    # Use new-damage costs with vehicle_type
     summary = compare_before_after(before_img, after_img, price_map)
+    # Recompute cost summary with vehicle_type for deltas
+    expanded_new = []
+    for cls, n in summary["new_damage_counts"].items():
+        expanded_new.extend([cls] * n)
+    vt_costs = aggregate_costs_for_classes(expanded_new, price_map, vehicle_type)
+    summary["new_damage_costs"] = vt_costs
     return JSONResponse({
         "before_counts": summary["before_counts"],
         "after_counts": summary["after_counts"],

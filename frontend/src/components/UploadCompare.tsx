@@ -19,6 +19,7 @@ export default function UploadCompare() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showCameraFor, setShowCameraFor] = useState<'before' | 'after' | null>(null);
+  const [vehicleType, setVehicleType] = useState<string>(() => loadLS<string>('vehicle.type') || 'car');
 
   useEffect(() => {
     const b = loadLS<string>('compare.before');
@@ -102,7 +103,8 @@ export default function UploadCompare() {
     setLoading(true);
     setError(null);
     try {
-      const data = await compare(b, a);
+      saveLS('vehicle.type', vehicleType);
+      const data = await compare(b, a, vehicleType);
       setResult(data);
       saveLS('compare.result', data);
     } catch (err: unknown) {
@@ -116,7 +118,14 @@ export default function UploadCompare() {
   return (
     <div>
       <form onSubmit={onSubmit}>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+          <select className="select" value={vehicleType} onChange={(e) => setVehicleType(e.target.value)}>
+            <option value="car">Car</option>
+            <option value="truck">Truck</option>
+            <option value="motorcycle">Motorcycle</option>
+            <option value="scooter">Scooter</option>
+            <option value="boat">Boat</option>
+          </select>
           <div>
             <label>Pick-up (Before): </label>
             <input type="file" accept="image/*" onChange={(e) => onBeforeChange(e.target.files?.[0] || null)} />
