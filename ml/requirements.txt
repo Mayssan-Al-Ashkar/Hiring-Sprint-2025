@@ -1,0 +1,11 @@
+ultralytics
+fastapi
+uvicorn
+python-multipart
+numpy
+pillow
+opencv-python-headless
+scikit-learn
+joblib
+pandas
+

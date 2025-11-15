@@ -1,0 +1,28 @@
+{
+  "car": {
+    "Minor": { "parts_usd": 200, "labor_h": 1.5, "paint_h": 0.5 },
+    "Moderate": { "parts_usd": 650, "labor_h": 4.0, "paint_h": 2.0 },
+    "Severe": { "parts_usd": 1800, "labor_h": 10.0, "paint_h": 4.0 }
+  },
+  "truck": {
+    "Minor": { "parts_usd": 300, "labor_h": 2.0, "paint_h": 0.6 },
+    "Moderate": { "parts_usd": 900, "labor_h": 5.0, "paint_h": 2.5 },
+    "Severe": { "parts_usd": 2600, "labor_h": 12.0, "paint_h": 5.0 }
+  },
+  "motorcycle": {
+    "Minor": { "parts_usd": 120, "labor_h": 1.0, "paint_h": 0.3 },
+    "Moderate": { "parts_usd": 350, "labor_h": 2.5, "paint_h": 1.0 },
+    "Severe": { "parts_usd": 900, "labor_h": 6.0, "paint_h": 2.0 }
+  },
+  "scooter": {
+    "Minor": { "parts_usd": 80, "labor_h": 0.8, "paint_h": 0.2 },
+    "Moderate": { "parts_usd": 220, "labor_h": 1.8, "paint_h": 0.6 },
+    "Severe": { "parts_usd": 600, "labor_h": 4.5, "paint_h": 1.5 }
+  },
+  "boat": {
+    "Minor": { "parts_usd": 250, "labor_h": 1.8, "paint_h": 0.0 },
+    "Moderate": { "parts_usd": 800, "labor_h": 5.5, "paint_h": 0.0 },
+    "Severe": { "parts_usd": 2400, "labor_h": 12.0, "paint_h": 0.0 }
+  }
+}
+

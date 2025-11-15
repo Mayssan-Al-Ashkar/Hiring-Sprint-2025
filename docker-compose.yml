@@ -1,0 +1,53 @@
+## docker-compose: runs the three services for local/demo use
+## - ml: FastAPI (YOLO + pricing)
+## - backend: Laravel API gateway/persistence
+## - frontend: React dev server
+version: "3.9"
+
+services:
+  ml:
+    build:
+      context: .
+      dockerfile: ml/Dockerfile
+    container_name: damage-ml
+    environment:
+      - PRICE_PROVIDER=rule
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./:/app
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: damage-backend
+    environment:
+      - ML_BASE=http://ml:8001
+      - APP_URL=http://localhost:8000
+      - FILESYSTEM_DISK=public
+    ports:
+      - "8000:8000"
+    working_dir: /app/backend
+    depends_on:
+      - ml
+    volumes:
+      - ./backend:/app/backend
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: damage-frontend
+    environment:
+      - VITE_API_BASE=http://localhost:8000
+    ports:
+      - "5173:5173"
+    working_dir: /app/frontend
+    depends_on:
+      - backend
+      - ml
+    volumes:
+      - ./frontend:/app/frontend
+
+
