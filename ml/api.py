@@ -107,15 +107,17 @@ async def compare(before: UploadFile = File(...), after: UploadFile = File(...),
     # Rule-based delta: recompute using new-damage list with areas
     expanded_new = []
     areas_new = []
-    remaining = dict(summary["new_damage_counts"])  # copy
+    # Normalize keys to ensure matching with model class names
+    remaining = {normalize_class_key(k): int(v) for k, v in summary["new_damage_counts"].items()}
     after_areas = summary["after"].get("areas") or []
     for i, cls in enumerate(summary["after"]["classes"]):
-        nleft = remaining.get(normalize_class_key(cls), 0)
+        norm = normalize_class_key(cls)
+        nleft = remaining.get(norm, 0)
         if nleft > 0:
             expanded_new.append(cls)
             if i < len(after_areas):
                 areas_new.append(after_areas[i])
-            remaining[normalize_class_key(cls)] = nleft - 1
+            remaining[norm] = nleft - 1
     rule_new_costs = aggregate_costs_for_classes(expanded_new, price_map, vehicle_type, areas_new)
 
     # ML delta: price(after) - price(before)
