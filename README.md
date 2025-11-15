@@ -196,4 +196,6 @@ Services:
 
 ---
 
+<p align="center"> <img src="./assets/single.png" alt="Single Image Detection Screenshot" width="600" /> </p>
+<p align="center"> <img src="./assets/compare.png" alt="Compare Damage Screenshot" width="600" /> </p>
 Questions or ideas? Open an issue or PR. Contributions are welcome!
