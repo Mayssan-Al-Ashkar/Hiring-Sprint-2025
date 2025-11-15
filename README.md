@@ -197,5 +197,3 @@ Services:
 ---
 
 Questions or ideas? Open an issue or PR. Contributions are welcome!
-
->>>>>>> f0d99606f950aac794e470fe706a8fbf0dfe2e0e
