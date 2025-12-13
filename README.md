@@ -38,12 +38,11 @@ End‑to‑end prototype for uploading vehicle photos, detecting damages with a 
 
 ```bash
 cd ml
-python -m venv ..\.venv  # if you don't have one yet
+python -m venv ..\.venv 
 ..\ .venv\Scripts\activate
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 
-# Optional: adjust cost parameters at runtime
 set LABOR_RATE_USD=95
 set PAINT_RATE_USD=120
 set MATERIALS_USD=50
