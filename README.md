@@ -28,9 +28,9 @@ End‑to‑end prototype for uploading vehicle photos, detecting damages with a 
 
 ## Prerequisites
 
-- Node 18+ and npm
-- PHP 8.2+ and Composer
-- Python 3.9–3.11 (recommended) and pip
+- Node 18+ and npm.
+- PHP 8.2+ and Composer.
+- Python 3.9–3.11 (recommended) and pip.
 
 ## Quickstart (3 terminals)
 
